@@ -53,24 +53,6 @@ class Reshape(nn.Module):
         return x.reshape(self.dim)
 
 
-def cnn_classifier():
-    ks,stride = 3,2
-    return nn.Sequential(
-        nn.Conv2d(1, 4, kernel_size=ks, stride=stride, padding=ks//2),
-        nn.ReLU(),
-        nn.Conv2d(4, 8, kernel_size=ks, stride=stride, padding=ks//2),
-        nn.ReLU(),
-        nn.Conv2d(8, 16, kernel_size=ks, stride=stride, padding=ks//2),
-        nn.ReLU(),
-        nn.Conv2d(16, 32, kernel_size=ks, stride=stride, padding=ks//2),
-        nn.ReLU(),
-        nn.Conv2d(32, 32, kernel_size=ks, stride=stride, padding=ks//2),
-        nn.ReLU(),
-        nn.Conv2d(32, 10, kernel_size=ks, stride=stride, padding=ks//2),
-        nn.Flatten(),
-    )
-
-
 # model definition
 def linear_classifier():
     return nn.Sequential(
@@ -86,6 +68,62 @@ def linear_classifier():
 model = linear_classifier()
 lr = 0.1
 max_lr = 0.1
+epochs = 5
+opt = optim.AdamW(model.parameters(), lr=lr)
+sched = optim.lr_scheduler.OneCycleLR(opt, max_lr, total_steps=len(dls.train), epochs=epochs)
+
+for epoch in range(epochs):
+    for train in (True, False):
+        accuracy = 0
+        dl = dls.train if train else dls.valid
+        for xb,yb in dl:
+            preds = model(xb)
+            loss = F.cross_entropy(preds, yb)
+            if train:
+                loss.backward()
+                opt.step()
+                opt.zero_grad()
+            with torch.no_grad():
+                accuracy += (preds.argmax(1).detach().cpu() == yb).float().mean()
+        if train:
+            sched.step()
+        accuracy /= len(dl)
+        print(f"{'train' if train else 'eval'}, epoch:{epoch+1}, loss: {loss.item():.4f}, accuracy: {accuracy:.4f}")
+    
+
+
+def cnn_classifier():
+    ks,stride = 3,2
+    return nn.Sequential(
+        nn.Conv2d(1, 8, kernel_size=ks, stride=stride, padding=ks//2),
+        nn.BatchNorm2d(8),
+        nn.ReLU(),
+        nn.Conv2d(8, 16, kernel_size=ks, stride=stride, padding=ks//2),
+        nn.BatchNorm2d(16),
+        nn.ReLU(),
+        nn.Conv2d(16, 32, kernel_size=ks, stride=stride, padding=ks//2),
+        nn.BatchNorm2d(32),
+        nn.ReLU(),
+        nn.Conv2d(32, 64, kernel_size=ks, stride=stride, padding=ks//2),
+        nn.BatchNorm2d(64),
+        nn.ReLU(),
+        nn.Conv2d(64, 64, kernel_size=ks, stride=stride, padding=ks//2),
+        nn.BatchNorm2d(64),
+        nn.ReLU(),
+        nn.Conv2d(64, 10, kernel_size=ks, stride=stride, padding=ks//2),
+        nn.Flatten(),
+    )
+
+
+def kaiming_init(m):
+    if isinstance(m, (nn.Conv1d, nn.Conv2d, nn.Conv3d)):
+        nn.init.kaiming_normal_(m.weight)
+
+
+model = cnn_classifier()
+model.apply(kaiming_init)
+lr = 0.1
+max_lr = 0.3
 epochs = 5
 opt = optim.AdamW(model.parameters(), lr=lr)
 sched = optim.lr_scheduler.OneCycleLR(opt, max_lr, total_steps=len(dls.train), epochs=epochs)
