@@ -33,7 +33,7 @@ bs = 1024
 class DataLoaders:
     def __init__(self, train_ds, valid_ds, bs, collate_fn, **kwargs):
         self.train = DataLoader(train_ds, batch_size=bs, shuffle=True, collate_fn=collate_fn, **kwargs)
-        self.valid = DataLoader(train_ds, batch_size=bs*2, shuffle=False, collate_fn=collate_fn, **kwargs)
+        self.valid = DataLoader(valid_ds, batch_size=bs*2, shuffle=False, collate_fn=collate_fn, **kwargs)
 
 def collate_fn(b):
     collate = default_collate(b)
@@ -91,27 +91,70 @@ for epoch in range(epochs):
         print(f"{'train' if train else 'eval'}, epoch:{epoch+1}, loss: {loss.item():.4f}, accuracy: {accuracy:.4f}")
 
 
-def cnn_classifier():
-    ks,stride = 3,2
+# def _conv_block(ni, nf, stride, act=act_gr, norm=None, ks=3):
+#     return nn.Sequential(conv(ni, nf, stride=1, act=act, norm=norm, ks=ks),
+#                          conv(nf, nf, stride=stride, act=None, norm=norm, ks=ks))
+
+# class ResBlock(nn.Module):
+#     def __init__(self, ni, nf, stride=1, ks=3, act=act_gr, norm=None):
+#         super().__init__()
+#         self.convs = _conv_block(ni, nf, stride, act=act, ks=ks, norm=norm)
+#         self.idconv = fc.noop if ni==nf else conv(ni, nf, ks=1, stride=1, act=None)
+#         self.pool = fc.noop if stride==1 else nn.AvgPool2d(2, ceil_mode=True)
+#         self.act = act()
+
+#     def forward(self, x): return self.act(self.convs(x) + self.idconv(self.pool(x)))
+
+
+def conv(ni, nf, ks=3, s=2, act=nn.ReLU, norm=None):
+    layers = [nn.Conv2d(ni, nf, kernel_size=ks, stride=s, padding=ks//2)]
+    if norm:
+        layers.append(norm)
+    if act:
+        layers.append(act())
+    return nn.Sequential(*layers)
+
+def _conv_block(ni, nf, ks=3, s=2, act=nn.ReLU, norm=None):
     return nn.Sequential(
-        nn.Conv2d(1, 8, kernel_size=ks, stride=stride, padding=ks//2),
-        nn.BatchNorm2d(8),
-        nn.ReLU(),
-        nn.Conv2d(8, 16, kernel_size=ks, stride=stride, padding=ks//2),
-        nn.BatchNorm2d(16),
-        nn.ReLU(),
-        nn.Conv2d(16, 32, kernel_size=ks, stride=stride, padding=ks//2),
-        nn.BatchNorm2d(32),
-        nn.ReLU(),
-        nn.Conv2d(32, 64, kernel_size=ks, stride=stride, padding=ks//2),
-        nn.BatchNorm2d(64),
-        nn.ReLU(),
-        nn.Conv2d(64, 64, kernel_size=ks, stride=stride, padding=ks//2),
-        nn.BatchNorm2d(64),
-        nn.ReLU(),
-        nn.Conv2d(64, 10, kernel_size=ks, stride=stride, padding=ks//2),
+        conv(ni, nf, ks=ks, s=1, norm=norm, act=act),
+        conv(nf, nf, ks=ks, s=s, norm=norm, act=act),
+    )
+
+class ResBlock(nn.Module):
+    def __init__(self, ni, nf, s=2, ks=3, act=nn.ReLU, norm=None):
+        super().__init__()
+        self.convs = _conv_block(ni, nf, s=s, ks=ks, act=act, norm=norm)
+        self.idconv = fc.noop if ni==nf else conv(ni, nf, ks=1, s=1, act=None)
+        self.pool = fc.noop if s==1 else nn.AvgPool2d(2, ceil_mode=True)
+        self.act = act()
+    
+    def forward(self, x):
+        return self.act(self.convs(x) + self.idconv(self.pool(x)))
+
+
+def cnn_classifier():
+    return nn.Sequential(
+        ResBlock(1, 8, norm=nn.BatchNorm2d(8)),
+        ResBlock(8, 16, norm=nn.BatchNorm2d(16)),
+        ResBlock(16, 32, norm=nn.BatchNorm2d(32)),
+        ResBlock(32, 64, norm=nn.BatchNorm2d(64)),
+        ResBlock(64, 64, norm=nn.BatchNorm2d(64)),
+        conv(64, 10, act=False),
         nn.Flatten(),
     )
+
+
+# def cnn_classifier():
+#     return nn.Sequential(
+#         ResBlock(1, 16, norm=nn.BatchNorm2d(16)),
+#         ResBlock(16, 32, norm=nn.BatchNorm2d(32)),
+#         ResBlock(32, 64, norm=nn.BatchNorm2d(64)),
+#         ResBlock(64, 128, norm=nn.BatchNorm2d(128)),
+#         ResBlock(128, 256, norm=nn.BatchNorm2d(256)),
+#         ResBlock(256, 256, norm=nn.BatchNorm2d(256)),
+#         conv(256, 10, act=False),
+#         nn.Flatten(),
+#     )
 
 
 def kaiming_init(m):
@@ -126,7 +169,6 @@ max_lr = 0.3
 epochs = 5
 opt = optim.AdamW(model.parameters(), lr=lr)
 sched = optim.lr_scheduler.OneCycleLR(opt, max_lr, total_steps=len(dls.train), epochs=epochs)
-
 for epoch in range(epochs):
     for train in (True, False):
         accuracy = 0
@@ -144,10 +186,6 @@ for epoch in range(epochs):
             sched.step()
         accuracy /= len(dl)
         print(f"{'train' if train else 'eval'}, epoch:{epoch+1}, loss: {loss.item():.4f}, accuracy: {accuracy:.4f}")
-    
-
-
-
 
 
 
