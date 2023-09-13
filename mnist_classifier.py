@@ -89,7 +89,6 @@ for epoch in range(epochs):
             sched.step()
         accuracy /= len(dl)
         print(f"{'train' if train else 'eval'}, epoch:{epoch+1}, loss: {loss.item():.4f}, accuracy: {accuracy:.4f}")
-    
 
 
 def cnn_classifier():
@@ -117,7 +116,7 @@ def cnn_classifier():
 
 def kaiming_init(m):
     if isinstance(m, (nn.Conv1d, nn.Conv2d, nn.Conv3d)):
-        nn.init.kaiming_normal_(m.weight)
+        nn.init.kaiming_normal_(m.weight)        
 
 
 model = cnn_classifier()
