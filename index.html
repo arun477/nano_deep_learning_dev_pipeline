@@ -1,25 +1,98 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>MNIST Classifier</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whiteboard</title>
+    <style>
+        #whiteboard {
+            border: 3px solid black;
+            border-radius: 6px;
+            background-color: #FFFFFF;
+        }
+        #capture-button {
+            background-color: #3F52D9;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 3px;
+            margin-top: 10px;
+            width: 190px;
+            margin-right: 20px;
+        }
+        #clear-button {
+            background-color: #FF0000;
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 3px;
+            margin-top: 10px;
+            width: 190px;
+        }
+        #container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        #btn-container {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+    </style>
 </head>
 <body>
-    <h1>MNIST Digit Classifier</h1>
-    <p>Draw a digit and click "Classify" to identify it.</p>
-
-    <!-- Canvas for drawing -->
-    <canvas id="canvas" width="200" height="200" style="border: 1px solid black;"></canvas>
-
-    <!-- Classify button -->
-    <button onclick="classifyDigit()">Classify</button>
-
-    <!-- Result display -->
-    <p id="result">Classification result: </p>
-
+    <div id='container'>
+        <canvas id="whiteboard" width="400" height="200"></canvas>
+        <div id='btn-container'>
+            <button id="capture-button">Predict</button>
+            <button id="clear-button">Clear</button>
+        </div>
+    </div>
     <script>
-        // JavaScript code for drawing and classification will go here
+        var canvas = document.getElementById('whiteboard');
+        var context = canvas.getContext('2d');
+        var drawing = false;
+        
+        canvas.addEventListener('mousedown', function (e) {
+            drawing = true;
+            context.beginPath();
+            context.moveTo(e.clientX - canvas.getBoundingClientRect().left, e.clientY - canvas.getBoundingClientRect().top);
+        });
+        
+        canvas.addEventListener('mousemove', function (e) {
+            if (drawing) {
+                context.lineTo(e.clientX - canvas.getBoundingClientRect().left, e.clientY - canvas.getBoundingClientRect().top);
+                context.stroke();
+            }
+        });
+        
+        canvas.addEventListener('mouseup', function () {
+            drawing = false;
+        });
+        
+        canvas.addEventListener('mouseout', function () {
+            drawing = false;
+        });
+        
+        var clearButton = document.getElementById('clear-button');
+        clearButton.addEventListener('click', function () {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+        });
 
-        // You would need to add JavaScript code to handle drawing and classification
+        var captureButton = document.getElementById('capture-button');
+        captureButton.addEventListener('click', function () {
+            // Convert the canvas content to a data URL (image)
+            var imageData = canvas.toDataURL("image/png");
+
+            // Send the image data to the Jupyter kernel variable
+            IPython.notebook.kernel.execute('image_data = "' + imageData + '"');
+        });
     </script>
 </body>
 </html>
