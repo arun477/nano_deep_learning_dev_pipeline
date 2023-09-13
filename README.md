@@ -1,2 +1,2 @@
-# vae
-variational autoencoder from scratch
+# MNIST CLASSIFIER
+mnist classifier from scratch
