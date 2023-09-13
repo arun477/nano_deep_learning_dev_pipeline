@@ -6,3 +6,6 @@ MNIST classifier from scratch
 
 * Training Notebook: mnist_classifier.ipynb
 * Cleaned Python Version: mnist_classifier.py
+
+* MLP Trained Model: mlp_classifier.pkl
+* CNN Trained Model: cnn_classifier.pkl
