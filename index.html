@@ -1,17 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Whiteboard</title>
     <style>
-        #whiteboard {
-            border: 3px solid black;
-            border-radius: 6px;
-            background-color: #FFFFFF;
+        body {
+            font-family: 'Montserrat', sans-serif;
         }
+
+        #whiteboard {
+            border: 3px solid #088395;
+            /* Simple black border */
+            border-radius: 10px;
+            /* Rounded corners */
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+            /* Subtle shadow effect */
+            background-color: #088395;
+        }
+
         #capture-button {
-            background-color: #3F52D9;
+            background-color: #071952;
             color: white;
             border: none;
             padding: 10px 20px;
@@ -22,8 +32,9 @@
             width: 190px;
             margin-right: 20px;
         }
+
         #clear-button {
-            background-color: #FF0000;
+            background-color: #F2F7A1;
             color: black;
             border: none;
             padding: 10px 20px;
@@ -33,12 +44,14 @@
             margin-top: 10px;
             width: 190px;
         }
+
         #container {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
         }
+
         #btn-container {
             display: flex;
             flex-direction: row;
@@ -46,7 +59,9 @@
         }
     </style>
 </head>
+
 <body>
+    <h3 style="text-align:center;">Draw and Predict Handwritten Digits</h3>
     <div id='container'>
         <canvas id="whiteboard" width="400" height="200"></canvas>
         <div id='btn-container'>
@@ -58,28 +73,29 @@
         var canvas = document.getElementById('whiteboard');
         var context = canvas.getContext('2d');
         var drawing = false;
-        
+        context.strokeStyle = 'white';
+
         canvas.addEventListener('mousedown', function (e) {
             drawing = true;
             context.beginPath();
             context.moveTo(e.clientX - canvas.getBoundingClientRect().left, e.clientY - canvas.getBoundingClientRect().top);
         });
-        
+
         canvas.addEventListener('mousemove', function (e) {
             if (drawing) {
                 context.lineTo(e.clientX - canvas.getBoundingClientRect().left, e.clientY - canvas.getBoundingClientRect().top);
                 context.stroke();
             }
         });
-        
+
         canvas.addEventListener('mouseup', function () {
             drawing = false;
         });
-        
+
         canvas.addEventListener('mouseout', function () {
             drawing = false;
         });
-        
+
         var clearButton = document.getElementById('clear-button');
         clearButton.addEventListener('click', function () {
             context.clearRect(0, 0, canvas.width, canvas.height);
@@ -95,4 +111,5 @@
         });
     </script>
 </body>
+
 </html>
