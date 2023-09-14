@@ -4,12 +4,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" href="/static/favicon.png">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
     <title>Draw and Predict Handwritten Digits</title>
     <style>
         body {
             font-family: 'Montserrat', sans-serif;
+        }
+
+        #prediction-result {
+        }
+
+        .prediction-item {
+            margin-bottom: 10px;
+            display: flex;
+        }
+
+        .prediction-digit {
+            font-size: 14px;
+        }
+
+        .progress-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .progress-bar {
+            width: 100px;
+            height: 10px;
+            background-color: #ccc;
+            border-radius: 6px;
+            margin-left: 10px;
+        }
+
+        .progress {
+            height: 100%;
+            border-radius: 5px;
+            background-color: #088395;
+            transition: width 0.3s ease-in-out;
         }
 
         #whiteboard {
@@ -52,6 +84,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            margin-right: 10px;
         }
 
         #btn-container {
@@ -59,19 +92,28 @@
             flex-direction: row;
             align-items: center;
         }
+
+        #parent {
+            display: flex;
+    justify-content: center;
+    align-items: center;
+        }
     </style>
 </head>
 
 <body>
     <h3 style="text-align:center;">Draw and Predict Handwritten Digits</h3>
+    <div id="parent">
     <div id='container'>
         <canvas id="whiteboard" width="400" height="200"></canvas>
         <div id='btn-container'>
             <button id="capture-button">Predict</button>
             <button id="clear-button">Clear</button>
         </div>
-        <div id="prediction-result"></div>
     </div>
+    <div id="prediction-result"></div>
+</div>
+
     <script>
         var canvas = document.getElementById('whiteboard');
         var context = canvas.getContext('2d');
@@ -103,27 +145,80 @@
         clearButton.addEventListener('click', function () {
             context.clearRect(0, 0, canvas.width, canvas.height);
         });
+        function isCanvasEmpty(canvas) {
+            const context = canvas.getContext('2d');
+            const pixelBuffer = new Uint32Array(context.getImageData(0, 0, canvas.width, canvas.height).data.buffer);
+            return !pixelBuffer.some(color => color !== 0);
+        }
 
         var predictionResult = document.getElementById('prediction-result');
         var captureButton = document.getElementById('capture-button');
         captureButton.addEventListener('click', function () {
+            captureButton.disabled = true
+            captureButton.style.opacity = "0.5";
+            captureButton.innerText = 'Loading...'
             var imageData = canvas.toDataURL("image/png");
+            var formData = new FormData();
+            formData.append("image", dataURLtoBlob(imageData), "image.png");
             fetch('/predict', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ image: imageData }), // Send the image data as JSON
+                body: formData,
             })
                 .then(response => response.json())
                 .then(data => {
-                    predictionResult.textContent = 'Predicted Digit: ' + data.prediction;
+                    predictionResult.innerHTML = '';
+                    data.prediction.forEach(item => {
+                        const digitItem = document.createElement('div');
+                        digitItem.classList.add('prediction-item');
+
+                        const digitText = document.createElement('div');
+                        digitText.classList.add('prediction-digit');
+                        digitText.textContent = `Digit ${item.digit}:`;
+
+                        const progressContainer = document.createElement('div');
+                        progressContainer.classList.add('progress-container');
+
+                        const progressBar = document.createElement('div');
+                        progressBar.classList.add('progress-bar');
+
+                        const progress = document.createElement('div');
+                        progress.classList.add('progress');
+                        progress.style.width = item.prob;
+
+                        progressBar.appendChild(progress);
+                        progressContainer.appendChild(progressBar);
+
+                        digitItem.appendChild(digitText);
+                        digitItem.appendChild(progressContainer);
+
+                        predictionResult.appendChild(digitItem);
+
+                        captureButton.disabled = false
+                        captureButton.style.opacity = "1";
+                        captureButton.innerText = 'Predict'
+                    });
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    predictionResult.textContent = 'Prediction failed.';
-            });
+                    predictionResult.textContent = 'Something wentr wrong, try again.';
+                    captureButton.disabled = false
+                    captureButton.style.opacity = "1";
+                    captureButton.innerText = 'Predict'
+                });
         });
+
+        // Function to convert a data URL to a Blob
+        function dataURLtoBlob(dataURL) {
+            var arr = dataURL.split(',');
+            var mime = arr[0].match(/:(.*?);/)[1];
+            var bstr = atob(arr[1]);
+            var n = bstr.length;
+            var u8arr = new Uint8Array(n);
+            while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new Blob([u8arr], { type: mime });
+        }
     </script>
 </body>
 

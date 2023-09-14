@@ -12,21 +12,11 @@ import torchvision.transforms.functional as TF
 from torch.utils.data import default_collate, DataLoader
 import torch.optim as optim
 import pickle
-get_ipython().run_line_magic('matplotlib', 'inline')
-plt.rcParams['figure.figsize'] = [2, 2]
-
-
-dataset_nm = 'mnist'
-x,y = 'image', 'label'
-ds = load_dataset(dataset_nm)
 
 
 def transform_ds(b):
     b[x] = [TF.to_tensor(ele) for ele in b[x]]
     return b
-
-dst = ds.with_transform(transform_ds)
-plt.imshow(dst['train'][0]['image'].permute(1,2,0));
 
 
 bs = 1024
@@ -38,10 +28,6 @@ class DataLoaders:
 def collate_fn(b):
     collate = default_collate(b)
     return (collate[x], collate[y])
-
-dls = DataLoaders(dst['train'], dst['test'], bs=bs, collate_fn=collate_fn)
-xb,yb = next(iter(dls.train))
-xb.shape, yb.shape
 
 
 class Reshape(nn.Module):
@@ -96,28 +82,20 @@ def kaiming_init(m):
         nn.init.kaiming_normal_(m.weight)        
 
 
-model = cnn_classifier()
-model.apply(kaiming_init)
-lr = 0.1
-max_lr = 0.3
-epochs = 5
-opt = optim.AdamW(model.parameters(), lr=lr)
-sched = optim.lr_scheduler.OneCycleLR(opt, max_lr, total_steps=len(dls.train), epochs=epochs)
-for epoch in range(epochs):
-    for train in (True, False):
-        accuracy = 0
-        dl = dls.train if train else dls.valid
-        for xb,yb in dl:
-            preds = model(xb)
-            loss = F.cross_entropy(preds, yb)
-            if train:
-                loss.backward()
-                opt.step()
-                opt.zero_grad()
-            with torch.no_grad():
-                accuracy += (preds.argmax(1).detach().cpu() == yb).float().mean()
-        if train:
-            sched.step()
-        accuracy /= len(dl)
-        print(f"{'train' if train else 'eval'}, epoch:{epoch+1}, loss: {loss.item():.4f}, accuracy: {accuracy:.4f}")
+loaded_model = cnn_classifier()
+loaded_model.load_state_dict(torch.load('classifier.pth'))
+loaded_model.eval();
+
+
+def predict(img):
+    with torch.no_grad():
+        img = img[None,]
+        pred = loaded_model(img)[0]
+        pred_probs = F.softmax(pred, dim=0)
+        pred = [{"digit": i, "prob": f'{prob*100:.2f}%', 'logits': pred[i]} for i, prob in enumerate(pred_probs)]
+        pred = sorted(pred, key=lambda ele: ele['digit'], reverse=False)
+    return pred
+
+
+
 
