@@ -2,6 +2,6 @@ from fastapi import FastAPI
 
 app = FastAPI()
 
-@app.post("/predict")
+@app.get("/predict")
 async def predict():
     return {"prediction": "Hello, World!"}
