@@ -6,4 +6,4 @@ MNIST classifier from scratch
 * Training Notebook: mnist_classifier.ipynb
 * Cleaned Python Inference Version: mnist_classifier.py
 
-* Model: classifier.pkl
+* Model: classifier.pth
