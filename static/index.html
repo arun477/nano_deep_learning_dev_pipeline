@@ -108,7 +108,7 @@
         var captureButton = document.getElementById('capture-button');
         captureButton.addEventListener('click', function () {
             var imageData = canvas.toDataURL("image/png");
-            fetch('YOUR_API_ENDPOINT', {
+            fetch('/predict', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
