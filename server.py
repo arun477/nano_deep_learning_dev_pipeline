@@ -10,6 +10,6 @@ app.mount("/static", StaticFiles(directory=Path("static")), name="static")
 async def root():
     return FileResponse("static/index.html")
 
-@app.get("/predict")
+@app.post("/predict")
 async def predict():
     return {"prediction": "Hello, World!"}
