@@ -70,6 +70,7 @@
             <button id="capture-button">Predict</button>
             <button id="clear-button">Clear</button>
         </div>
+        <div id="prediction-result"></div>
     </div>
     <script>
         var canvas = document.getElementById('whiteboard');
@@ -103,13 +104,25 @@
             context.clearRect(0, 0, canvas.width, canvas.height);
         });
 
+        var predictionResult = document.getElementById('prediction-result');
         var captureButton = document.getElementById('capture-button');
         captureButton.addEventListener('click', function () {
-            // Convert the canvas content to a data URL (image)
             var imageData = canvas.toDataURL("image/png");
-
-            // Send the image data to the Jupyter kernel variable
-            IPython.notebook.kernel.execute('image_data = "' + imageData + '"');
+            fetch('YOUR_API_ENDPOINT', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ image: imageData }), // Send the image data as JSON
+            })
+                .then(response => response.json())
+                .then(data => {
+                    predictionResult.textContent = 'Predicted Digit: ' + data.prediction;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    predictionResult.textContent = 'Prediction failed.';
+                });
         });
     </script>
 </body>
