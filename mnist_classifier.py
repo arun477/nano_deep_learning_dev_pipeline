@@ -53,59 +53,6 @@ class Reshape(nn.Module):
         return x.reshape(self.dim)
 
 
-# model definition
-def linear_classifier():
-    return nn.Sequential(
-        Reshape((-1, 784)),
-        nn.Linear(784, 50),
-        nn.ReLU(),
-        nn.Linear(50, 50),
-        nn.ReLU(),
-        nn.Linear(50, 10)
-    )
-
-
-model = linear_classifier()
-lr = 0.1
-max_lr = 0.1
-epochs = 5
-opt = optim.AdamW(model.parameters(), lr=lr)
-sched = optim.lr_scheduler.OneCycleLR(opt, max_lr, total_steps=len(dls.train), epochs=epochs)
-
-for epoch in range(epochs):
-    for train in (True, False):
-        accuracy = 0
-        dl = dls.train if train else dls.valid
-        for xb,yb in dl:
-            preds = model(xb)
-            loss = F.cross_entropy(preds, yb)
-            if train:
-                loss.backward()
-                opt.step()
-                opt.zero_grad()
-            with torch.no_grad():
-                accuracy += (preds.argmax(1).detach().cpu() == yb).float().mean()
-        if train:
-            sched.step()
-        accuracy /= len(dl)
-        print(f"{'train' if train else 'eval'}, epoch:{epoch+1}, loss: {loss.item():.4f}, accuracy: {accuracy:.4f}")
-
-
-# def _conv_block(ni, nf, stride, act=act_gr, norm=None, ks=3):
-#     return nn.Sequential(conv(ni, nf, stride=1, act=act, norm=norm, ks=ks),
-#                          conv(nf, nf, stride=stride, act=None, norm=norm, ks=ks))
-
-# class ResBlock(nn.Module):
-#     def __init__(self, ni, nf, stride=1, ks=3, act=act_gr, norm=None):
-#         super().__init__()
-#         self.convs = _conv_block(ni, nf, stride, act=act, ks=ks, norm=norm)
-#         self.idconv = fc.noop if ni==nf else conv(ni, nf, ks=1, stride=1, act=None)
-#         self.pool = fc.noop if stride==1 else nn.AvgPool2d(2, ceil_mode=True)
-#         self.act = act()
-
-#     def forward(self, x): return self.act(self.convs(x) + self.idconv(self.pool(x)))
-
-
 def conv(ni, nf, ks=3, s=2, act=nn.ReLU, norm=None):
     layers = [nn.Conv2d(ni, nf, kernel_size=ks, stride=s, padding=ks//2)]
     if norm:
@@ -144,19 +91,6 @@ def cnn_classifier():
     )
 
 
-# def cnn_classifier():
-#     return nn.Sequential(
-#         ResBlock(1, 16, norm=nn.BatchNorm2d(16)),
-#         ResBlock(16, 32, norm=nn.BatchNorm2d(32)),
-#         ResBlock(32, 64, norm=nn.BatchNorm2d(64)),
-#         ResBlock(64, 128, norm=nn.BatchNorm2d(128)),
-#         ResBlock(128, 256, norm=nn.BatchNorm2d(256)),
-#         ResBlock(256, 256, norm=nn.BatchNorm2d(256)),
-#         conv(256, 10, act=False),
-#         nn.Flatten(),
-#     )
-
-
 def kaiming_init(m):
     if isinstance(m, (nn.Conv1d, nn.Conv2d, nn.Conv3d)):
         nn.init.kaiming_normal_(m.weight)        
@@ -186,7 +120,4 @@ for epoch in range(epochs):
             sched.step()
         accuracy /= len(dl)
         print(f"{'train' if train else 'eval'}, epoch:{epoch+1}, loss: {loss.item():.4f}, accuracy: {accuracy:.4f}")
-
-
-
 
