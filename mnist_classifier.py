@@ -11,7 +11,6 @@ import matplotlib as mpl
 import torchvision.transforms.functional as TF
 from torch.utils.data import default_collate, DataLoader
 import torch.optim as optim
-import pickle
 
 
 def transform_ds(b):
@@ -23,7 +22,7 @@ bs = 1024
 class DataLoaders:
     def __init__(self, train_ds, valid_ds, bs, collate_fn, **kwargs):
         self.train = DataLoader(train_ds, batch_size=bs, shuffle=True, collate_fn=collate_fn, **kwargs)
-        self.valid = DataLoader(valid_ds, batch_size=bs*2, shuffle=False, collate_fn=collate_fn, **kwargs)
+        self.valid = DataLoader(valid_ds, batch_size=bs, shuffle=False, collate_fn=collate_fn, **kwargs)
 
 def collate_fn(b):
     collate = default_collate(b)
@@ -65,13 +64,24 @@ class ResBlock(nn.Module):
         return self.act(self.convs(x) + self.idconv(self.pool(x)))
 
 
+# def cnn_classifier():
+#     return nn.Sequential(
+#         ResBlock(1, 8, norm=nn.BatchNorm2d(8)),
+#         ResBlock(8, 16, norm=nn.BatchNorm2d(16)),
+#         ResBlock(16, 32, norm=nn.BatchNorm2d(32)),
+#         ResBlock(32, 64, norm=nn.BatchNorm2d(64)),
+#         ResBlock(64, 64, norm=nn.BatchNorm2d(64)),
+#         conv(64, 10, act=False),
+#         nn.Flatten(),
+#     )
+
 def cnn_classifier():
     return nn.Sequential(
-        ResBlock(1, 8, norm=nn.BatchNorm2d(8)),
-        ResBlock(8, 16, norm=nn.BatchNorm2d(16)),
-        ResBlock(16, 32, norm=nn.BatchNorm2d(32)),
-        ResBlock(32, 64, norm=nn.BatchNorm2d(64)),
-        ResBlock(64, 64, norm=nn.BatchNorm2d(64)),
+        ResBlock(1, 8,),
+        ResBlock(8, 16, ),
+        ResBlock(16, 32,),
+        ResBlock(32, 64, ),
+        ResBlock(64, 64,),
         conv(64, 10, act=False),
         nn.Flatten(),
     )
@@ -83,7 +93,7 @@ def kaiming_init(m):
 
 
 loaded_model = cnn_classifier()
-loaded_model.load_state_dict(torch.load('classifier.pth'))
+loaded_model.load_state_dict(torch.load('classifier.pth'));
 loaded_model.eval();
 
 

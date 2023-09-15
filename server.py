@@ -6,6 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 import torchvision.transforms as transforms
 import mnist_classifier
+import torch
 
 app = FastAPI()
 
