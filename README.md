@@ -7,3 +7,6 @@ MNIST classifier from scratch
 * Cleaned Python Inference Version: mnist_classifier.py
 
 * Model: classifier.pth
+
+* To run FastApi server locally: uvicorn server:app --reload
+
