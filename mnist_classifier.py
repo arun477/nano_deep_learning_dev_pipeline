@@ -48,7 +48,7 @@ def conv(ni, nf, ks=3, s=2, act=nn.ReLU, norm=None):
 
 def _conv_block(ni, nf, ks=3, s=2, act=nn.ReLU, norm=None):
     return nn.Sequential(
-        conv(ni, nf, ks=ks, s=1, norm=norm, act=act),
+        conv(ni, nf, ks=ks, s=1, norm=None, act=act),
         conv(nf, nf, ks=ks, s=s, norm=norm, act=act),
     )
 
@@ -77,14 +77,25 @@ class ResBlock(nn.Module):
 
 def cnn_classifier():
     return nn.Sequential(
-        ResBlock(1, 8,),
-        ResBlock(8, 16, ),
-        ResBlock(16, 32,),
-        ResBlock(32, 64, ),
-        ResBlock(64, 64,),
+        ResBlock(1, 8, norm=nn.LayerNorm([8, 14, 14])),
+        ResBlock(8, 16, norm=nn.LayerNorm([16, 7, 7])),
+        ResBlock(16, 32, norm=nn.LayerNorm([32, 4, 4])),
+        ResBlock(32, 64, norm=nn.LayerNorm([64, 2, 2])),
+        ResBlock(64, 64,  norm=nn.LayerNorm([64, 1, 1])),
         conv(64, 10, act=False),
         nn.Flatten(),
     )
+
+# def cnn_classifier():
+#     return nn.Sequential(
+#         ResBlock(1, 8,),
+#         ResBlock(8, 16, ),
+#         ResBlock(16, 32,),
+#         ResBlock(32, 64, ),
+#         ResBlock(64, 64,),
+#         conv(64, 10, act=False),
+#         nn.Flatten(),
+#     )
 
 
 def kaiming_init(m):

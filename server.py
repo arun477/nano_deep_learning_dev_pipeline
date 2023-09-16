@@ -1,12 +1,13 @@
-from fastapi import FastAPI, File, UploadFile
-import io
+from fastapi import FastAPI, UploadFile
 from PIL import Image
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
-import torchvision.transforms as transforms
 import mnist_classifier
 import torch
+from pathlib import Path
+import datetime
+import numpy as np
 
 app = FastAPI()
 
@@ -15,20 +16,29 @@ app.mount("/static", StaticFiles(directory=Path("static")), name="static")
 async def root():
     return FileResponse("static/index.html")
 
-def process_image(file: UploadFile):
-    image_bytes = file.file.read()
-    pil_image = Image.open(io.BytesIO(image_bytes))
-    transform = transforms.Compose([
-        transforms.Resize((28, 28)),
-        transforms.Grayscale(num_output_channels=1),
-        transforms.ToTensor(),
-    ])
-    tensor_image = transform(pil_image)
-    return tensor_image
+upload_dir = Path("uploads")
+upload_dir.mkdir(parents=True, exist_ok=True)
 
+def process_image(file):
+    image = Image.open(file.file)
+    image = image.resize((28, 28))  # Resize to MNIST image size
+    image = image.convert("L")  # Convert to grayscale
+    raw_image = image
+    image = np.array(image)
+    image = image / 255.0  # Normalize pixel values
+    return torch.from_numpy(image).float().reshape(1, 28, 28), raw_image
+    
+def store_img(image):
+    timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    unique_filename = f"{timestamp}.png"
+    output_path = upload_dir / unique_filename
+    image.save(output_path)
+    
 @app.post("/predict")
 async def predict(image: UploadFile):
-    tensor_image = process_image(image)
+    tensor_image, raw_image = process_image(image)
+    print(tensor_image.shape)
     prediction = mnist_classifier.predict(tensor_image)
+    store_img(raw_image)
     return {"prediction": prediction}
 
