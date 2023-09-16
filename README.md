@@ -8,5 +8,5 @@ MNIST classifier from scratch
 
 * Model: classifier.pth
 
-* To run FastApi Server Locally: uvicorn server:app --reload
+* To Run FastApi Server Locally: uvicorn server:app --reload
 ![site_screenshot](/static/site_screenshot.png)
