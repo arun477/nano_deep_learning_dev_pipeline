@@ -17,5 +17,7 @@ MNIST classifier from scratch
 
 * Model: classifier.pth
 
+* Try Online: https://carlfeynman-mnist.hf.space/
+
 * To Run FastApi Server Locally: uvicorn server:app --reload
 ![site_screenshot](/static/site_screenshot.png)
