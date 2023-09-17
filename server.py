@@ -36,12 +36,9 @@ def store_img(image):
     image.save(output_path)
     
 @app.post("/predict")
-async def predict(image: UploadFile):
-    return {'msg': 'ok'}
-    print(image)
-    # tensor_image, raw_image = process_image(image)
-    # print(tensor_image.shape)
-    # prediction = mnist_classifier.predict(tensor_image)
-    # store_img(raw_image)
-    prediction = []
+async def predict(image):
+    tensor_image, raw_image = process_image(image)
+    print(tensor_image.shape)
+    prediction = mnist_classifier.predict(tensor_image)
+    store_img(raw_image)
     return {"prediction": prediction}
