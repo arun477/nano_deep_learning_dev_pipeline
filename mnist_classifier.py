@@ -64,17 +64,6 @@ class ResBlock(nn.Module):
         return self.act(self.convs(x) + self.idconv(self.pool(x)))
 
 
-# def cnn_classifier():
-#     return nn.Sequential(
-#         ResBlock(1, 8, norm=nn.BatchNorm2d(8)),
-#         ResBlock(8, 16, norm=nn.BatchNorm2d(16)),
-#         ResBlock(16, 32, norm=nn.BatchNorm2d(32)),
-#         ResBlock(32, 64, norm=nn.BatchNorm2d(64)),
-#         ResBlock(64, 64, norm=nn.BatchNorm2d(64)),
-#         conv(64, 10, act=False),
-#         nn.Flatten(),
-#     )
-
 def cnn_classifier():
     return nn.Sequential(
         ResBlock(1, 8, norm=nn.LayerNorm([8, 14, 14])),
@@ -85,17 +74,6 @@ def cnn_classifier():
         conv(64, 10, act=False),
         nn.Flatten(),
     )
-
-# def cnn_classifier():
-#     return nn.Sequential(
-#         ResBlock(1, 8,),
-#         ResBlock(8, 16, ),
-#         ResBlock(16, 32,),
-#         ResBlock(32, 64, ),
-#         ResBlock(64, 64,),
-#         conv(64, 10, act=False),
-#         nn.Flatten(),
-#     )
 
 
 def kaiming_init(m):
@@ -116,7 +94,4 @@ def predict(img):
         pred = [{"digit": i, "prob": f'{prob*100:.2f}%', 'logits': pred[i]} for i, prob in enumerate(pred_probs)]
         pred = sorted(pred, key=lambda ele: ele['digit'], reverse=False)
     return pred
-
-
-
 
