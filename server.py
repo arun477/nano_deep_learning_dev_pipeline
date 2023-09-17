@@ -52,7 +52,7 @@ class Item(BaseModel):
 async def home(item: Item):
     return {
         'prediction': [{
-            'name': item['name']
+            'name': item.name
         }]
     }
 

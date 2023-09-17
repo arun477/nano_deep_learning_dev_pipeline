@@ -164,11 +164,14 @@
             fetch('/home', {
                 method: 'POST',
                 // body: formData,
-                body: {
+                headers: {
+                    'Content-Type': 'application/json', // Set the Content-Type header
+                },
+                body: JSON.stringify({
                    'item': {    
                      'name': 'arun'
                    }
-                },
+                })
             })
                 .then(response => response.json())
                 .then(data => {
@@ -206,7 +209,7 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    predictionResult.textContent = 'Something wentr wrong, try again.';
+                    predictionResult.textContent = 'Something went wrong, try again.';
                     captureButton.disabled = false
                     captureButton.style.opacity = "1";
                     captureButton.innerText = 'Predict'
