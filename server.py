@@ -8,7 +8,6 @@ import torch
 from pathlib import Path
 import datetime
 import numpy as np
-from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -36,9 +35,8 @@ def store_img(image):
     image.save(output_path)
     
 @app.post("/predict")
-async def predict(image):
+async def predict(image:UploadFile):
     tensor_image, raw_image = process_image(image)
-    print(tensor_image.shape)
     prediction = mnist_classifier.predict(tensor_image)
     store_img(raw_image)
     return {"prediction": prediction}
