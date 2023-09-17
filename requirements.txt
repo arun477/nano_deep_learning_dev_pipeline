@@ -1,4 +1,4 @@
-fastapi==0.68.1
+fastapi==0.73.0
 uvicorn==0.15.0
 aiofiles
 torch
@@ -7,4 +7,3 @@ torchvision
 datasets
 matplotlib
 python-multipart
-
