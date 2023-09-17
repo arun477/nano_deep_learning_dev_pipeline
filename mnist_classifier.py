@@ -6,8 +6,6 @@ from torch import nn
 import torch.nn.functional as F
 from datasets import load_dataset
 import fastcore.all as fc
-import matplotlib.pyplot as plt
-import matplotlib as mpl
 import torchvision.transforms.functional as TF
 from torch.utils.data import default_collate, DataLoader
 import torch.optim as optim
