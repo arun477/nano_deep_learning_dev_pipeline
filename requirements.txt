@@ -6,4 +6,5 @@ fastcore
 torchvision
 datasets
 matplotlib
+python-multipart
 
