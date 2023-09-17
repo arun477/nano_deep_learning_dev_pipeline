@@ -160,18 +160,9 @@
             var imageData = canvas.toDataURL("image/png");
             var formData = new FormData();
             formData.append("image", dataURLtoBlob(imageData), "image.png");
-            // fetch('/predict', {
-            fetch('/home', {
+            fetch('/predict', {
                 method: 'POST',
-                // body: formData,
-                headers: {
-                    'Content-Type': 'application/json', // Set the Content-Type header
-                },
-                body: JSON.stringify({
-          
-                     'name': 'arun'
-            
-                })
+                body: formData,
             })
                 .then(response => response.json())
                 .then(data => {

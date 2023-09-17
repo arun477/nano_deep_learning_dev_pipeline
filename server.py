@@ -37,6 +37,7 @@ def store_img(image):
     
 @app.post("/predict")
 async def predict(image: UploadFile):
+    return {'msg': 'ok'}
     print(image)
     # tensor_image, raw_image = process_image(image)
     # print(tensor_image.shape)
@@ -44,15 +45,3 @@ async def predict(image: UploadFile):
     # store_img(raw_image)
     prediction = []
     return {"prediction": prediction}
-
-class Item(BaseModel):
-    name: str
-
-@app.post("/home")
-async def home(item: Item):
-    return {
-        'prediction': [{
-            'name': item.name
-        }]
-    }
-
