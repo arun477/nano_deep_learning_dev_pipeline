@@ -1,3 +1,12 @@
+---
+title: Mnist
+emoji: 🐢
+colorFrom: yellow
+colorTo: purple
+sdk: docker
+pinned: false
+---
+
 # <img src="/static/favicon.png" alt="Logo" style="float: left; margin-right: 10px; border-radius:100%;margin-top:5px" />  MNIST CLASSIFIER
 MNIST classifier from scratch
 * Model: CNN
