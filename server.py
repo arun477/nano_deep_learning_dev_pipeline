@@ -38,5 +38,5 @@ def store_img(image):
 async def predict(image:UploadFile):
     tensor_image, raw_image = process_image(image)
     prediction = mnist_classifier.predict(tensor_image)
-    store_img(raw_image)
+    # store_img(raw_image)
     return {"prediction": prediction}
