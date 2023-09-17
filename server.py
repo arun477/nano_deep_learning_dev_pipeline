@@ -8,6 +8,7 @@ import torch
 from pathlib import Path
 import datetime
 import numpy as np
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -43,4 +44,15 @@ async def predict(image: UploadFile):
     # store_img(raw_image)
     prediction = []
     return {"prediction": prediction}
+
+class Item(BaseModel):
+    name: str
+
+@app.post("/home")
+async def home(item: Item):
+    return {
+        'prediction': [{
+            'name': item['name']
+        }]
+    }
 
