@@ -20,6 +20,8 @@ MNIST classifier from scratch
 
 * Try Online: https://carlfeynman-mnist.hf.space/
 
+* If you want to host this on Hugging Face as a space, please refer to [this documentation.](https://huggingface.co/docs/hub/spaces-sdks-docker-first-demo)
+
 * To Run FastApi Server Locally: uvicorn server:app --reload
   
 * Note: When you try it out on the website, accuracy may drop due to distribution changes from training data to canvas image input. It has not been adjusted or fine-tuned for this specific purpose; it's intended just to demonstrate the full flow.
