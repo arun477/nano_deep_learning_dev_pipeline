@@ -13,6 +13,7 @@ MNIST classifier from scratch
 * Accuracy: 97%
 
 * Training Notebook: mnist_classifier.ipynb
+  
 * Cleaned Python Inference Version: mnist_classifier.py
 
 * Model: classifier.pth
@@ -20,6 +21,7 @@ MNIST classifier from scratch
 * Try Online: https://carlfeynman-mnist.hf.space/
 
 * To Run FastApi Server Locally: uvicorn server:app --reload
-* Note: When you try it out on the website, accuracy may drop due to distribution changes from training data to canvas image input. It has not been adjusted or fine-tuned for this specific purpose; it's just for demonstration.
+  
+* Note: When you try it out on the website, accuracy may drop due to distribution changes from training data to canvas image input. It has not been adjusted or fine-tuned for this specific purpose; it's intended just to demonstrate the full flow.
    
 ![site_screenshot](/static/site_screenshot.png)
