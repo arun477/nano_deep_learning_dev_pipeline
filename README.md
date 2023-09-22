@@ -14,7 +14,7 @@ MNIST classifier from scratch
 
 * Training Notebook: mnist_classifier.ipynb
   
-* Cleaned Python Inference Version: mnist_classifier.py
+* Cleaned Python Inference Version: mnist_classifier.py (This file is auto-generated from mnist_classifier.ipynb. Please do not edit it.)
 
 * Model: classifier.pth
 
